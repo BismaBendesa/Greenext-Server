@@ -5,10 +5,12 @@ const {
   registerUser,
   loginUser,
   authenticateToken,
+  logoutUser,
 } = require("../controllers/authController");
 
 router.post("/register", registerUser); // http://localhost:5000/api/v1/auth/register POST
 router.post("/login", loginUser); // http://localhost:5000/api/v1/auth/login POST
+router.post("/logout", authenticateToken, logoutUser);
 // http://localhost:5000/api/v1/auth/me
 router.get("/me", authenticateToken, (req, res) => {
   res.status(200).json({

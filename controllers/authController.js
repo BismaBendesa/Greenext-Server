@@ -125,11 +125,11 @@ const loginUser = async (req, res) => {
 // middleware authenthicate token
 const authenticateToken = (req, res, next) => {
   const token = req.cookies?.token; // retrieve token from cookie using optional chaining
-  console.log("Token from Cookies:", token);
+  // console.log("Token from Cookies:", token);
 
-  console.log("All Cookies:", req.cookies);
-  console.log("Token:", req.cookies?.token);
-  console.log("Headers:", req.headers);
+  // console.log("All Cookies:", req.cookies);
+  // console.log("Token:", req.cookies?.token);
+  // console.log("Headers:", req.headers);
 
   if (!token) {
     return res
@@ -148,8 +148,41 @@ const authenticateToken = (req, res, next) => {
   }
 };
 
+const logoutUser = async (req, res) => {
+  res.setHeader(
+    "Cache-Control",
+    "no-store, no-cache, must-revalidate, proxy-revalidate"
+  );
+  res.setHeader("Expires", "0");
+  res.setHeader("Pragma", "no-cache");
+  console.log("Session data:", req.session);
+  if (!req.session) {
+    return res.status(400).json({ message: "Session not found" });
+  }
+  await req.session.destroy((err) => {
+    if (err) {
+      console.error("Error destroying session:", err);
+      return res
+        .status(500)
+        .json({ success: false, message: "Error Logout failed" });
+    }
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      maxAge: 3600000,
+      path: "/",
+    });
+    console.log("token cookie cleared");
+    res
+      .status(200)
+      .json({ success: true, message: "Logged out successfully!" });
+  });
+};
+
 module.exports = {
   registerUser,
   loginUser,
   authenticateToken,
+  logoutUser,
 };

@@ -1,6 +1,7 @@
 const dotenv = require("dotenv").config();
 
 const express = require("express");
+const session = require("express-session");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
@@ -12,6 +13,20 @@ const techCatalog = require("./routes/techCatalog");
 const PORT = process.env.PORT || 5000;
 
 const app = express();
+
+app.use(
+  session({
+    secret: "your-secret-key", // Replace with a secure key
+    resave: false,
+    saveUninitialized: false, // Prevents creating empty sessions
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // Secure cookies in production
+      sameSite: "lax", // Protects against CSRF
+      maxAge: 3600000, // 1 hour
+    },
+  })
+);
 
 app.use(express.json());
 app.use(
