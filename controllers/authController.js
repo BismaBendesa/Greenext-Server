@@ -180,9 +180,21 @@ const logoutUser = async (req, res) => {
   });
 };
 
+// middleware for authorized user
+const authorizeRole = (requiredRole) => {
+  return (req, res, next) => {
+    const userRole = req.user.role; // get the user role set by authenthicate token middleware
+    if (userRole !== requiredRole) {
+      return res.status(403).json({ success: false, message: "Access Denied" });
+    }
+    next();
+  };
+};
+
 module.exports = {
   registerUser,
   loginUser,
   authenticateToken,
   logoutUser,
+  authorizeRole,
 };

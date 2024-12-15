@@ -6,6 +6,7 @@ const {
   loginUser,
   authenticateToken,
   logoutUser,
+  authorizeRole,
 } = require("../controllers/authController");
 
 router.post("/register", registerUser); // http://localhost:5000/api/v1/auth/register POST
