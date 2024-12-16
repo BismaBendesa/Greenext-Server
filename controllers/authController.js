@@ -181,8 +181,13 @@ const logoutUser = async (req, res) => {
 };
 
 // middleware for authorized user
-const authorizeRole = (requiredRole) => {
+const authorizeRole = (requiredRole = "admin") => {
   return (req, res, next) => {
+    if (!requiredRole) {
+      return res
+        .status(400)
+        .json({ success: false, message: "No Role passsed" });
+    }
     const userRole = req.user.role; // get the user role set by authenthicate token middleware
     if (userRole !== requiredRole) {
       return res.status(403).json({ success: false, message: "Access Denied" });
