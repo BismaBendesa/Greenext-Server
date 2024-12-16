@@ -13,6 +13,8 @@ const {
   deleteCourse,
   createModule,
   createModuleContent,
+  createModuleReference,
+  getModule,
 } = require("../controllers/courseController");
 
 // router.get("/", searchCourse); // http://localhost:5000/api/v1/course/ GET
@@ -26,6 +28,16 @@ router.post(
   authorizeRole("admin"),
   createModuleContent
 );
+
+// module_reference routes
+router.post(
+  "/module/:id/reference",
+  authenticateToken,
+  authorizeRole("admin"),
+  createModuleReference
+);
+
+router.get("/module/:idCourse", authenticateToken, getModule);
 
 // module routes
 router.post(

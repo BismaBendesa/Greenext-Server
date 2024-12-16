@@ -32,8 +32,15 @@ const getOrSearchCourse = async (req, res) => {
 };
 
 const addCourse = async (req, res) => {
-  const { name, description, difficulty, status, price, total_hours } =
-    req.body;
+  const {
+    name,
+    description,
+    difficulty,
+    status,
+    price,
+    total_hours,
+    image_cover,
+  } = req.body;
 
   console.log(req.body);
   // validation
@@ -48,8 +55,8 @@ const addCourse = async (req, res) => {
     const createdBy = req.user.id; // use the user id from the token
     const updatedBy = req.user.id;
 
-    const query = `INSERT INTO course (name, description, difficulty, status, price, total_hours, created_by, created_at, updated_by, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?, NOW())`;
+    const query = `INSERT INTO course (name, description, difficulty, status, price, total_hours, image_cover created_by, created_at, updated_by, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, NOW())`;
     const result = await db.query(query, [
       name,
       description,
@@ -57,13 +64,14 @@ const addCourse = async (req, res) => {
       status || "active",
       price,
       total_hours || 0,
+      image_cover || "foto2.jpg",
       createdBy,
       updatedBy,
     ]);
     res.status(201).json({
       success: true,
       message: "Course added succesfully!",
-      course_id: result.insertId,
+      courseId: result.insertId,
       user: req.user, // include user info in the response
     });
   } catch (error) {
@@ -74,8 +82,15 @@ const addCourse = async (req, res) => {
 
 const updateCourse = async (req, res) => {
   const { id } = req.params;
-  const { name, description, difficulty, status, price, total_hours } =
-    req.body;
+  const {
+    name,
+    description,
+    difficulty,
+    status,
+    price,
+    total_hours,
+    image_cover,
+  } = req.body;
 
   // check the id of targeted course
   if (!id) {
@@ -93,7 +108,8 @@ const updateCourse = async (req, res) => {
     !difficulty &&
     !status &&
     !price &&
-    !total_hours
+    !total_hours &&
+    !image_cover
     // !updated_by &&
     // !created_by
   ) {
@@ -133,6 +149,10 @@ const updateCourse = async (req, res) => {
     if (total_hours) {
       fields.push("total_hours = ?");
       values.push(total_hours);
+    }
+    if (image_cover) {
+      fields.push("image_cover = ?");
+      values.push(image_cover);
     }
 
     fields.push("updated_by = ?");
@@ -200,6 +220,28 @@ const deleteCourse = async (req, res) => {
   } catch (error) {
     console.error("Error deleting course", error.message);
     res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+const getModule = async (req, res) => {
+  const { idCourse } = req.params;
+
+  if (!idCourse) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Missing course id" });
+  }
+  try {
+    const query = `SELECT * FROM module where id_course = ${idCourse}`;
+    const [result] = await db.query(query);
+    res.status(400).json({
+      success: true,
+      message: `Get module with id : ${idCourse} successful!`,
+      data: result,
+    });
+  } catch (error) {
+    console.error("Error get module content!", error.message);
+    res.status(500).json({ success: false, message: "Internal server error!" });
   }
 };
 
@@ -278,6 +320,27 @@ const createModuleContent = async (req, res) => {
   }
 };
 
+const createModuleReference = async (req, res) => {
+  const { id } = req.params;
+  const { reference, link } = req.body;
+
+  try {
+    const query =
+      "INSERT INTO module_reference (id_module, reference, link, created_at, updated_at) VALUES (?, ?, ?, NOW(), NOW())";
+
+    const [result] = await db.query(query, [id, reference, link]);
+
+    res.status(200).json({
+      success: true,
+      message: "Module reference added successfully",
+      courseId: result.insertId,
+    });
+  } catch (error) {
+    console.error("Erro Add Module Reference", error.message);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
 module.exports = {
   getOrSearchCourse,
   addCourse,
@@ -286,4 +349,6 @@ module.exports = {
   deleteCourse,
   createModule,
   createModuleContent,
+  createModuleReference,
+  getModule,
 };
