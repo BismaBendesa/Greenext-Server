@@ -35,11 +35,14 @@ const addCourse = async (req, res) => {
   const { name, description, difficulty, status, price, total_hours } =
     req.body;
 
+  console.log(req.body);
   // validation
-  if (!name || !description || !price) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Missing required fields" });
+  if (!name || !description || price === undefined) {
+    return res.status(400).json({
+      success: false,
+      message: "Missing required fields",
+      log: req.body,
+    });
   }
   try {
     const createdBy = req.user.id; // use the user id from the token
@@ -200,10 +203,87 @@ const deleteCourse = async (req, res) => {
   }
 };
 
+const createModule = async (req, res) => {
+  const { module_number, module_description } = req.body;
+  const { id } = req.params;
+  const createdBy = req.user.id;
+  const updatedBy = req.user.id;
+
+  // Check if there's any course
+  if (!id) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Course ID Not Found" });
+  }
+  // simple validation
+  if (module_number == undefined || !module_description) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Missing required files!" });
+  }
+
+  try {
+    const query =
+      "INSERT INTO module (id_course, module_number, module_description, created_at, created_by, updated_at, updated_by) VALUES (?, ?, ?, NOW(), ?, NOW(), ?)";
+    const result = await db.query(query, [
+      id,
+      module_number,
+      module_description,
+      createdBy,
+      updatedBy,
+    ]);
+    res.status(201).json({
+      success: true,
+      message: "Module added successfully!",
+      module_id: result.insertId,
+    });
+  } catch (error) {
+    console.error("Error Add Module", error.message);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+const createModuleContent = async (req, res) => {
+  const { text, type, video, file } = req.body;
+  const { id } = req.params;
+  const createdBy = req.user.id; // taken from the middleware
+  const updatedBy = req.user.id;
+
+  if (!text || !type) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Missing Required Fields" });
+  }
+
+  try {
+    const query =
+      "INSERT INTO module_content (id_module, text, type, video, file, created_at, created_by, updated_at, updated_by) VALUES (?, ?, ?, ?, ?, NOW(), ?, NOW(), ?)";
+    const [result] = await db.query(query, [
+      id,
+      text,
+      type,
+      video || null,
+      file || null,
+      createdBy,
+      updatedBy,
+    ]);
+    res.status(201).json({
+      success: true,
+      message: "Module content added successfully",
+      moduleContentTextId: result.insertId,
+    });
+  } catch (error) {
+    console.error("Error Adding Course", error.message);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   getOrSearchCourse,
   addCourse,
   updateCourse,
   getCourseById,
   deleteCourse,
+  createModule,
+  createModuleContent,
 };
