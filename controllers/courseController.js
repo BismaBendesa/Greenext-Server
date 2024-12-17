@@ -285,6 +285,20 @@ const createModule = async (req, res) => {
   }
 };
 
+const getModuleContent = async (req, res) => {
+  const { idModule } = req.params;
+  try {
+    const query = `SELECT * FROM module_content WHERE id_module = ${idModule}`;
+    const [result] = await db.query(query);
+    res
+      .status(200)
+      .json({ success: true, message: "Get data successfully!", data: result });
+  } catch (error) {
+    console.error("Error get module content", error.message);
+    res.status(500).json({ success: false, message: "Internal server error!" });
+  }
+};
+
 const createModuleContent = async (req, res) => {
   const { text, type, video, file } = req.body;
   const { id } = req.params;
@@ -320,23 +334,51 @@ const createModuleContent = async (req, res) => {
   }
 };
 
+const getModuleReference = async (req, res) => {
+  const { idModule } = req.params;
+  try {
+    const query = `SELECT * FROM module_reference WHERE id_module = ${idModule}`;
+    const [result] = await db.query(query);
+    res.status(200).json({
+      success: true,
+      message: "Get module reference success!",
+      data: result,
+    });
+  } catch (error) {
+    console.error("Error get module reference", error.message);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
 const createModuleReference = async (req, res) => {
-  const { id } = req.params;
+  const { idModule } = req.params;
   const { reference, link } = req.body;
+
+  if (!idModule) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Module Id Not Found" });
+  }
+
+  if (!reference || !link) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Missign required fields" });
+  }
 
   try {
     const query =
       "INSERT INTO module_reference (id_module, reference, link, created_at, updated_at) VALUES (?, ?, ?, NOW(), NOW())";
 
-    const [result] = await db.query(query, [id, reference, link]);
+    const [result] = await db.query(query, [idModule, reference, link]);
 
     res.status(200).json({
       success: true,
       message: "Module reference added successfully",
-      courseId: result.insertId,
+      moduleReferenceId: result.insertId,
     });
   } catch (error) {
-    console.error("Erro Add Module Reference", error.message);
+    console.error("Error Add Module Reference", error.message);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
@@ -351,4 +393,6 @@ module.exports = {
   createModuleContent,
   createModuleReference,
   getModule,
+  getModuleContent,
+  getModuleReference,
 };
