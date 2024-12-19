@@ -15,8 +15,9 @@ const {
   createModuleContent,
   createModuleReference,
   getModule,
-  getModuleContent,
+  getAllModuleContent,
   getModuleReference,
+  getSingleModule,
 } = require("../controllers/courseController");
 
 // router.get("/", searchCourse); // http://localhost:5000/api/v1/course/ GET
@@ -31,11 +32,9 @@ router.post(
   createModuleContent
 );
 
-router.get(
-  "/module/:id/content/:idModule",
-  authenticateToken,
-  getModuleContent
-);
+router.get("/module/:idCourse/content", authenticateToken, getAllModuleContent);
+
+router.get("/module/:courseId/content/:moduleId", getSingleModule); // need fix
 
 // module_reference routes
 router.post(
@@ -63,6 +62,6 @@ router.post(
 );
 
 router.put("/:id", authenticateToken, authorizeRole("admin"), updateCourse); // http://localhost:5000/api/v1/course/id PUT
-router.get("/:id", getCourseById); // http://localhost:5000/api/v1/course/id GET
+router.get("/:id", authenticateToken, getCourseById); // http://localhost:5000/api/v1/course/id GET
 router.delete("/:id", authorizeRole("admin"), deleteCourse); // http://localhost:5000/api/v1/course/id DELETE
 module.exports = router;

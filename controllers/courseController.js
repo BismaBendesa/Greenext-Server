@@ -190,7 +190,26 @@ const getCourseById = async (req, res) => {
   }
 
   try {
-    const query = "SELECT * FROM course where id = ?";
+    const query = `
+      SELECT 
+        course.id, 
+        course.name, 
+        course.description, 
+        course.difficulty, 
+        course.status, 
+        course.price, 
+        course.total_hours, 
+        course.image_cover, 
+        course.created_at, 
+        users.id AS id_user, 
+        users.username AS username 
+      FROM 
+        course 
+      INNER JOIN users
+      ON 
+        course.created_by = users.id 
+      WHERE 
+        course.id = ?`;
     const result = await db.query(query, [id]);
     res.status(200).json({ success: true, data: result[0] });
   } catch (error) {
@@ -234,7 +253,7 @@ const getModule = async (req, res) => {
   try {
     const query = `SELECT * FROM module where id_course = ${idCourse}`;
     const [result] = await db.query(query);
-    res.status(400).json({
+    res.status(200).json({
       success: true,
       message: `Get module with id : ${idCourse} successful!`,
       data: result,
@@ -285,14 +304,17 @@ const createModule = async (req, res) => {
   }
 };
 
-const getModuleContent = async (req, res) => {
-  const { idModule } = req.params;
+const getAllModuleContent = async (req, res) => {
+  const { idCourse } = req.params;
   try {
-    const query = `SELECT * FROM module_content WHERE id_module = ${idModule}`;
-    const [result] = await db.query(query);
+    const query = `SELECT mc.*, m.module_description AS module_title 
+      FROM module_content mc
+      JOIN module m ON mc.id_module = m.id
+      WHERE m.id_course = ?`;
+    const [result] = await db.query(query, [idCourse]);
     res
       .status(200)
-      .json({ success: true, message: "Get data successfully!", data: result });
+      .json({ success: true, message: "All module fetched", data: result });
   } catch (error) {
     console.error("Error get module content", error.message);
     res.status(500).json({ success: false, message: "Internal server error!" });
@@ -383,6 +405,31 @@ const createModuleReference = async (req, res) => {
   }
 };
 
+const getSingleModule = async (req, res) => {
+  const { courseId, moduleId } = req.params;
+  try {
+    const query = `SELECT * FROM module WHERE id = ? AND id_course = ?`;
+    const [result] = await db.query(query, [moduleId, courseId]);
+
+    // Check if any content exists
+    if (!result || result.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No content found for this module in the course.",
+      });
+    }
+    // Return the content
+    return res.status(200).json({
+      success: true,
+      message: "Get module content successful",
+      data: result,
+    });
+  } catch (error) {
+    console.error("Error Fetching Data", error.message);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
 module.exports = {
   getOrSearchCourse,
   addCourse,
@@ -393,6 +440,7 @@ module.exports = {
   createModuleContent,
   createModuleReference,
   getModule,
-  getModuleContent,
+  getAllModuleContent,
   getModuleReference,
+  getSingleModule,
 };
