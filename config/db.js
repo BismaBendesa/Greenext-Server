@@ -19,11 +19,19 @@ require("dotenv").config({ path: "./.env" });
 //   console.log("Connected to MySQL Database");
 // });
 // module.exports = connection;
-
+console.log(process.env.DB_PASSWORD);
 const pool = mysql.createPool({
+  // host: process.env.DB_HOST || "localhost",
+  // user: process.env.DB_USER || "root",
+  // password: process.env.DB_PASWORD || "",
+  // database: process.env.DB_NAME || "greenext",
+  // port: process.env.DB_PORT || 3306,
+  // waitForConnections: true,
+  // connectionLimit: 10, //numnber of concurent connections
+  // queueLimit: 0, // unlimited queue size
   host: process.env.DB_HOST || "localhost",
   user: process.env.DB_USER || "root",
-  password: process.env.DB_PASWORD || "",
+  password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME || "greenext",
   port: process.env.DB_PORT || 3306,
   waitForConnections: true,
