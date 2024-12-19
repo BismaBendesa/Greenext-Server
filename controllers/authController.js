@@ -102,8 +102,8 @@ const loginUser = async (req, res) => {
     // set token in an HTTP-Only Cookie
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: true,
+      sameSite: "none",
       maxAge: 3600000,
     });
     console.log("Response headers:", res.getHeaders());

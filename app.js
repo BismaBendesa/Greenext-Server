@@ -22,16 +22,28 @@ app.use(
     cookie: {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production", // Secure cookies in production
-      sameSite: "lax", // Protects against CSRF
+      sameSite: "none", // Protects against CSRF
       maxAge: 3600000, // 1 hour
     },
   })
 );
 
 app.use(express.json());
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://greennext-nu.vercel.app",
+];
+
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
   })
