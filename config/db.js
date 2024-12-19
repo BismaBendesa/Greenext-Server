@@ -25,6 +25,7 @@ const pool = mysql.createPool({
   user: process.env.DB_USER || "root",
   password: process.env.DB_PASWORD || "",
   database: process.env.DB_NAME || "greenext",
+  port: process.env.DB_PORT || 3306,
   waitForConnections: true,
   connectionLimit: 10, //numnber of concurent connections
   queueLimit: 0, // unlimited queue size
